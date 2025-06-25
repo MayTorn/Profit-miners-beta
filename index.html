@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profit Miners – BETA</title>
+  <style>
+    body { font-family: Arial; background: #f4f4f4; text-align: center; padding: 20px; }
+    h1 { font-size: 26px; color: #222; }
+    select, button { padding: 10px; font-size: 16px; margin: 10px; }
+    #results, #history { margin-top: 20px; max-width: 800px; margin-left: auto; margin-right: auto; text-align: left; }
+    .box { background: white; padding: 15px; margin: 10px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    iframe { border: none; width: 100%; height: 400px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Profit Miners – BETA</h1>
+
+  <div>
+    <select id="pair1"><option value="">-- Select Pair 1 --</option></select>
+    <select id="pair2"><option value="">-- Select Pair 2 --</option></select>
+    <select id="pair3"><option value="">-- Select Pair 3 --</option></select>
+    <select id="strategy">
+      <option value="ma">MA Crossover</option>
+      <option value="vwap">VWAP</option>
+      <option value="rsi">RSI</option>
+    </select>
+    <br>
+    <button onclick="analyze()">Analyze</button>
+  </div>
+
+  <iframe id="tvChart" src=""></iframe>
+
+  <div id="results"></div>
+  <div id="history">
+    <h3>Signal History</h3>
+    <div id="historyList"></div>
+  </div>
+
+  <script>
+    const pairs = ["EUR/USD","GBP/USD","USD/JPY","USD/CHF","AUD/USD","NZD/USD","USD/CAD","EUR/JPY","GBP/JPY","EUR/GBP","XAU/USD","US30/USD","NDX/USD","DE30/EUR"];
+    for (let id of ["pair1", "pair2", "pair3"]) {
+      const sel = document.getElementById(id);
+      pairs.forEach(p => sel.innerHTML += `<option value="${p}">${p}</option>`);
+    }
+
+    function updateChart(pair) {
+      if (!pair) return;
+      const symbol = pair.replace("/", "");
+      const src = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview_chart&symbol=FX:${symbol}&interval=60&theme=Light`;
+      document.getElementById("tvChart").src = src;
+    }
+
+    async function analyze() {
+      const strategy = document.getElementById("strategy").value;
+      const resultsDiv = document.getElementById("results");
+      const historyDiv = document.getElementById("historyList");
+      resultsDiv.innerHTML = "";
+
+      for (let id of ["pair1", "pair2", "pair3"]) {
+        const pair = document.getElementById(id).value;
+        if (!pair) continue;
+        updateChart(pair);
+        const res = await fetch(`/analyze?pair=${pair}&strategy=${strategy}`);
+        const data = await res.json();
+        const html = `<div class="box"><b>${data.pair}</b> | Strategy: ${data.strategy}<br>Signal: <strong>${data.signal}</strong><br><i>${data.explanation}</i><br><small>${data.timestamp}</small></div>`;
+        resultsDiv.innerHTML += html;
+        historyDiv.innerHTML += html;
+      }
+    }
+  </script>
+
+</body>
+</html>

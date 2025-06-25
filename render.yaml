@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: profit-miners-beta
+    env: python
+    buildCommand: ""
+    startCommand: "python main.py"

@@ -60,11 +60,17 @@
         const pair = document.getElementById(id).value;
         if (!pair) continue;
         updateChart(pair);
-        const res = await fetch(`/analyze?pair=${pair}&strategy=${strategy}`);
-        const data = await res.json();
-        const html = `<div class="box"><b>${data.pair}</b> | Strategy: ${data.strategy}<br>Signal: <strong>${data.signal}</strong><br><i>${data.explanation}</i><br><small>${data.timestamp}</small></div>`;
-        resultsDiv.innerHTML += html;
-        historyDiv.innerHTML += html;
+        try {
+          const res = await fetch(`/analyze?pair=${pair}&strategy=${strategy}`);
+          const data = await res.json();
+          const html = `<div class="box"><b>${data.pair || pair}</b> | Strategy: ${data.strategy || strategy.toUpperCase()}<br>Signal: <strong>${data.signal || 'Error'}</strong><br><i>${data.explanation || 'No explanation available'}</i><br><small>${data.timestamp || ''}</small></div>`;
+          resultsDiv.innerHTML += html;
+          historyDiv.innerHTML += html;
+        } catch (err) {
+          const html = `<div class="box"><b>${pair}</b> | ERROR<br><strong>Failed to fetch data</strong></div>`;
+          resultsDiv.innerHTML += html;
+          historyDiv.innerHTML += html;
+        }
       }
     }
   </script>
